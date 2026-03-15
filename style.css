@@ -133,54 +133,55 @@ body {
     min-height: 85vh;
     padding: 2rem 4vw;
     z-index: 10;
-    overflow: hidden;
-    /* Prevent GIF from spilling */
+    overflow: visible;
+    /* Overflow visible para o robô não ser cortado */
 }
 
-.hero-canvas {
+.hero-video {
     position: absolute;
-    top: 50%;
-    left: 51%;
-    /* Movido um pouco para a esquerda (aproximadamente 1cm a 2cm dependendo da tela) */
-    transform: translate(-50%, -50%);
-    /* Centraliza exato no próprio eixo de ambos */
-    width: 48%;
-    /* Aumentado 10% (de 38 para 48) */
-    height: 70%;
-    /* Aumentado 10% na proporção (de 60 para 70) */
-    opacity: 0.95;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.9; /* Reduzido levemente para um aspecto mais equilibrado */
     z-index: 1;
+    object-fit: cover;
     pointer-events: none;
-
-    /* Efeito Borda Neon / Glow (Baseado na Referência) */
-    border-radius: 40px;
-    /* Cantos bem arredondados */
-    box-shadow:
-        0 0 15px rgba(0, 136, 255, 0.4),
-        /* Brilho interno/base */
-        0 10px 40px rgba(0, 136, 255, 0.6),
-        /* Brilho estendido pra baixo/lados */
-        inset 0 -20px 40px rgba(0, 150, 255, 0.3);
-    /* Brilho interior partindo do fundo */
-    border-bottom: 3px solid rgba(135, 206, 250, 0.8);
-    /* Linha inferior mais clara e forte */
+    
+    /* Removemos as bordas e glows da versão "caixa" */
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: none;
 
     background-color: var(--bg-color);
-    /* Fundo caso a imagem não cubra 100% dos cantos transparentes */
+    filter: brightness(1.05) contrast(1.02); /* Filtro suavizado */
+}
+
+
+
+/* Overlay escuro para garantir que o texto seja legível sobre o vídeo */
+.hero-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Gradiente levemente mais escuro para melhorar o contraste com o texto */
+    background: linear-gradient(to right, rgba(2, 11, 24, 0.6) 0%, rgba(2, 11, 24, 0.1) 50%, rgba(2, 11, 24, 0.6) 100%);
+    z-index: 2;
+    pointer-events: none;
 }
 
 .hero-content {
     flex: 0 0 35%;
-    /* Ocupar 35% do espaço na esquerda com texto */
     max-width: 450px;
-    /* Reduzi a largura máxima do texto */
-    padding-top: 5vh;
-    margin-top: -5vh;
+    padding-top: 0;
+    margin-top: -38vh; /* Subiu 3x mais */
     margin-left: -2vw;
-    /* Puxa todo o bloco de texto mais para a borda esquerda */
     position: relative;
-    z-index: 20;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 1), 0 0 60px rgba(0, 0, 0, 0.8);
 }
 
 .hero-content::after {
@@ -240,42 +241,7 @@ body {
     box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
 }
 
-/* Spline 3D Container */
-.hero-visual {
-    position: absolute;
-    top: 0;
-    right: -4%;
-    /* Puxa ele ligeiramente para fora da tela na direita */
-    width: 35%;
-    /* Limita a área do robô à direita */
-    height: 100%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    z-index: 5;
-    pointer-events: none;
-    /* Robô sem opção de mexer */
-}
 
-.spline-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    right: 0;
-    top: 0;
-    z-index: 5;
-    opacity: 0.9;
-}
-
-spline-viewer {
-    width: 100%;
-    height: 100%;
-    transform: scale(0.9);
-    /* O robô fica pouca coisa menor no seu 1/3 da tela */
-    transform-origin: center right;
-    overflow: visible;
-    pointer-events: none;
-}
 
 /* Bottom glassmorphism panels */
 .bottom-section {
@@ -465,15 +431,7 @@ spline-viewer {
     color: var(--text-secondary);
 }
 
-/* Spline watermark bypass */
-spline-viewer::part(logo),
-spline-viewer::part(logo-wrapper),
-spline-viewer::part(watermark),
-spline-viewer::part(branding) {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-}
+
 
 
 /* --- Detalhamento de Soluções e Benefícios --- */
@@ -1115,52 +1073,7 @@ spline-viewer::part(branding) {
         z-index: 1;
     }
 
-    /* Robô: posicionado em cima da seção, sem qualquer corte */
-    .hero-visual {
-        order: 1;
-        position: relative;
-        top: auto;
-        right: auto;
-        width: 100%;
-        height: 70vw;
-        max-height: 380px;
-        min-height: 200px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        pointer-events: none;
-        overflow: visible;
-        z-index: 10;
-    }
 
-    /* Cobre a marca d'água com camada da cor do site */
-    .hero-visual::after {
-        content: '';
-        position: absolute;
-        bottom: 7%;
-        right: 12%;
-        width: 170px;
-        height: 44px;
-        background: radial-gradient(ellipse at right, #020b18 40%, transparent 100%);
-        z-index: 20;
-        pointer-events: none;
-        border-radius: 22px;
-    }
-
-    .spline-container {
-        width: 100%;
-        height: 100%;
-        overflow: visible;
-        position: relative;
-    }
-
-    spline-viewer {
-        transform: scale(0.48) translateX(10%);
-        transform-origin: center center;
-        display: block;
-        width: 100%;
-        height: 100%;
-    }
 
     /* Título: aparece PRIMEIRO no mobile */
     .hero-content {
@@ -1300,11 +1213,7 @@ spline-viewer::part(branding) {
         font-size: 1.7rem;
     }
 
-    .hero-visual {
-        height: 88vw;      /* Same proportion as 768px to keep robot full */
-        max-height: 360px;
-        min-height: 240px;
-    }
+
 
     .hero-canvas {
         width: 95% !important;

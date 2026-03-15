@@ -13,20 +13,9 @@
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Spline Watermark Bypass: DEVE rodar ANTES do módulo do Spline -->
-    <script>
-        // Override ANTES de qualquer script externo carregar
-        (function() {
-            const _orig = Element.prototype.attachShadow;
-            Element.prototype.attachShadow = function(init) {
-                // Força modo open para que scripts externos possam acessar o shadowRoot
-                return _orig.call(this, { ...init, mode: 'open' });
-            };
-        })();
-    </script>
 
-    <!-- Spline Viewer (Vanilla JS Integration) -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
+
+
 </head>
 <body>
     <!-- Background Abstract Elements -->
@@ -88,7 +77,11 @@
 
     <main class="hero-container">
         <!-- Background Image Sequence Canvas -->
-        <canvas id="hero-canvas" class="hero-canvas"></canvas>
+        <!-- Background Video -->
+        <video id="hero-video" class="hero-video" autoplay muted playsinline preload="auto">
+            <source src="assets/casa animação.mp4" type="video/mp4">
+            Seu navegador não suporta vídeos.
+        </video>
 
         <div class="hero-content">
             <h1 class="hero-title">
@@ -100,12 +93,9 @@
             </p>
         </div>
 
-        <div class="hero-visual">
-            <div class="spline-container" style="overflow: hidden; padding-bottom: 0; position: relative;">
-                <spline-viewer url="https://prod.spline.design/Z7eNuld6c0K9FggR/scene.splinecode?v=2"
-                    style="pointer-events: none; display: block; margin-bottom: -60px;"></spline-viewer>
-            </div>
-        </div>
+
+
+
     </main>
 
     <!-- Benefícios Section -->
@@ -301,134 +291,44 @@
         }
 
 
+
+
         // =============================================
-        // SPLINE WATERMARK BYPASS - Versão Definitiva
-        // attachShadow já foi forçado para 'open' no <head>
+        // EFEITO BOOMERANG (PING-PONG) NO VÍDEO HERO
         // =============================================
-        const splineRemoveLogo = (shadowRoot) => {
-            if (!shadowRoot) return;
-
-            // 1. Injeta CSS permanente no Shadow DOM
-            // Envia o logo para ATRÁS do canvas (o canvas fica na frente cobrindo a marca)
-            if (!shadowRoot.querySelector('#spline-bypass-css')) {
-                const s = document.createElement('style');
-                s.id = 'spline-bypass-css';
-                s.textContent = `
-                    /* Canvas na frente */
-                    canvas {
-                        position: relative !important;
-                        z-index: 2 !important;
+        const heroVideo = document.getElementById("hero-video");
+        if (heroVideo) {
+            let direction = 1; // 1 = frente, -1 = trás
+            
+            const animateVideo = () => {
+                if (direction === 1) {
+                    // Se chegou perto do fim, inverte
+                    if (heroVideo.currentTime >= heroVideo.duration - 0.05) {
+                        direction = -1;
+                        heroVideo.pause();
                     }
-                    /* Logo/marca d'água atrás do canvas */
-                    #logo, a[href*="spline.design"] {
-                        position: absolute !important;
-                        z-index: 1 !important;
-                        pointer-events: none !important;
-                        opacity: 0 !important;
-                        visibility: hidden !important;
+                } else {
+                    // Se estiver voltando, reduz o tempo manualmente
+                    heroVideo.currentTime -= 0.033;
+                    
+                    if (heroVideo.currentTime <= 0.05) {
+                        direction = 1;
+                        heroVideo.play();
                     }
-                `;
-                shadowRoot.appendChild(s);
-            }
-
-            // 2. Remove fisicamente qualquer nó que sobrou
-            [
-                '#logo',
-                'a[href*="spline.design"]',
-                'a[href*="spline-logo"]',
-            ].forEach(sel => {
-                shadowRoot.querySelectorAll(sel).forEach(el => el.remove());
-            });
-        };
-
-        // Aguarda o custom element ficar disponível
-        customElements.whenDefined('spline-viewer').then(() => {
-            const applyToAll = () => {
-                document.querySelectorAll('spline-viewer').forEach(viewer => {
-                    splineRemoveLogo(viewer.shadowRoot);
-
-                    // 3. Observa mudanças futuras no shadowRoot
-                    if (!viewer.__logoObserver) {
-                        const obs = new MutationObserver(() => splineRemoveLogo(viewer.shadowRoot));
-                        obs.observe(viewer.shadowRoot, { childList: true, subtree: true });
-                        viewer.__logoObserver = obs;
-                    }
-                });
+                }
+                requestAnimationFrame(animateVideo);
             };
 
-            // Executa imediatamente e tenta novamente algumas vezes para garantir
-            applyToAll();
-            setTimeout(applyToAll, 500);
-            setTimeout(applyToAll, 1500);
-            setTimeout(applyToAll, 3000);
-            setTimeout(applyToAll, 5000);
-
-            // Backup periódico para casos extremos
-            setInterval(applyToAll, 2000);
-        });
-
-        
-        // Hero Background Image Sequence Animation
-        const heroCanvas = document.getElementById("hero-canvas");
-        if (heroCanvas) {
-            const context = heroCanvas.getContext("2d");
-            const frameCount = 80;
-            const currentFrame = index => (
-                `SplineLionlab/imagem de fundo/Apagar_e_Acender_Luzes_por_Compartimento (online-video-cutter.com)_${index.toString().padStart(3, '0')}.jpg`
-            );
-
-            const images = [];
-            const frameConfig = { frame: 0 };
+            // Inicia o monitoramento quando o vídeo estiver pronto
+            heroVideo.addEventListener('loadedmetadata', () => {
+                requestAnimationFrame(animateVideo);
+            });
             
-            // Preload images
-            for (let i = 0; i < frameCount; i++) {
-                const img = new Image();
-                img.src = currentFrame(i);
-                images.push(img);
+            // Caso o vídeo já tenha carregado
+            if (heroVideo.readyState >= 1) {
+                requestAnimationFrame(animateVideo);
             }
-
-            // Draw the first image initially
-            images[0].onload = renderCanvas;
-
-            function renderCanvas() {
-                // Resize drawing surface to match element dimensions
-                heroCanvas.width = heroCanvas.offsetWidth;
-                heroCanvas.height = heroCanvas.offsetHeight;
-                
-                const img = images[frameConfig.frame];
-                if (!img || !img.complete || img.naturalWidth === 0) return;
-
-                // Como o CSS do hover-canvas agora é uma "caixa" menor (35% x 60%),
-                // precisamos que o script do Javascript apenas desenhe a imagem como `cover`
-                // ocupando 100% dessa caixa e com cantos arredondados CSS limitando o overflow.
-                
-                const hRatio = heroCanvas.width / img.width;
-                const vRatio = heroCanvas.height / img.height;
-                const ratio  = Math.max(hRatio, vRatio); // Use max to COVER the box
-                
-                const finalImgWidth = img.width * ratio;
-                const finalImgHeight = img.height * ratio;
-
-                // Centraliza a imagem DENTRO da própria caixa limitadora do canvas
-                const centerShift_x = (heroCanvas.width - finalImgWidth) / 2;
-                const centerShift_y = (heroCanvas.height - finalImgHeight) / 2;
-
-                context.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
-                context.drawImage(img, 0, 0, img.width, img.height,
-                                centerShift_x, centerShift_y, finalImgWidth, finalImgHeight);
-            }
-
-            window.addEventListener('resize', renderCanvas);
-
-            // Animation loop 
-            let frameIdx = 0;
-            setInterval(() => {
-                frameIdx = (frameIdx + 1) % frameCount;
-                frameConfig.frame = frameIdx;
-                requestAnimationFrame(renderCanvas);
-            }, 1000 / 15); // ~15 fps loop (slower animation)
         }
-
         // Interatividade nas caixas de Benefício (Brilho seguindo o mouse)
         const benefitsGrid = document.getElementById("benefits-grid");
         if (benefitsGrid) {
