@@ -1,348 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maxiimus Tech | Automação Residencial</title>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/assets/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maxiimus Tech | Automação Residencial Premium</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Transforme sua casa em um ecossistema inteligente com a Maxiimus Tech. Automação residencial premium: segurança, iluminação, climatização e áudio integrados." />
+    <meta name="keywords" content="automação residencial, casa inteligente, smart home, iluminação inteligente, segurança residencial, fechadura biométrica, climatização inteligente" />
+    <meta name="author" content="Maxiimus Tech" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Maxiimus Tech | Automação Residencial Premium" />
+    <meta property="og:description" content="Transforme sua casa em um ecossistema inteligente. Segurança, iluminação, climatização e áudio com tecnologia avançada." />
+    <meta property="og:image" content="/assets/logo.png" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Maxiimus Tech | Automação Residencial Premium" />
+    <meta name="twitter:description" content="Transforme sua casa em um ecossistema inteligente com tecnologia avançada." />
+    <meta name="twitter:image" content="/assets/logo.png" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://maxiimustech.com.br/" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Maxiimus Tech",
+      "description": "Automação residencial premium: segurança, iluminação, climatização e áudio integrados.",
+      "url": "https://maxiimustech.com.br",
+      "email": "maxiimustech33@gmail.com",
+      "image": "/assets/logo.png",
+      "priceRange": "$$$$",
+      "areaServed": "BR",
+      "serviceType": ["Automação Residencial", "Casa Inteligente", "Segurança Residencial", "Iluminação Inteligente", "Climatização Inteligente"],
+      "sameAs": [
+        "https://www.instagram.com/maxiimus_tech",
+        "https://www.tiktok.com/@maxiimus_tech"
+      ]
+    }
+    </script>
 
     <!-- Google Fonts: Inter & Rajdhani -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="style.css">
-
-
-
-
-</head>
-<body>
-    <!-- Background Abstract Elements -->
-    <div class="bg-abstract">
-        <svg class="network-svg" width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="20%" x2="30%" y2="0" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="30%" y1="0" x2="15%" y2="40%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <circle cx="15%" cy="40%" r="3" fill="#00f0ff" opacity="0.5"/>
-            <line x1="15%" y1="40%" x2="0" y2="50%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="15%" y1="40%" x2="40%" y2="55%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <circle cx="40%" cy="55%" r="4" fill="#00f0ff" opacity="0.6"/>
-            <line x1="40%" y1="55%" x2="50%" y2="15%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="50%" y1="15%" x2="70%" y2="0%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="40%" y1="55%" x2="45%" y2="80%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="45%" y1="80%" x2="20%" y2="100%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <circle cx="45%" cy="80%" r="3" fill="#00f0ff" opacity="0.4"/>
-            <circle cx="20%" cy="100%" r="2" fill="#00f0ff" opacity="0.3"/>
-            <line x1="70%" y1="90%" x2="100%" y2="60%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="70%" y1="90%" x2="85%" y2="100%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="70%" y1="90%" x2="85%" y2="40%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <circle cx="70%" cy="90%" r="5" fill="#00f0ff" opacity="0.5"/>
-            <line x1="85%" y1="40%" x2="100%" y2="20%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <line x1="85%" y1="40%" x2="60%" y2="20%" stroke="rgba(0, 240, 255, 0.15)" stroke-width="1.5"/>
-            <circle cx="85%" cy="40%" r="3" fill="#00f0ff" opacity="0.6"/>
-        </svg>
-    </div>
-
-    <!-- Right side geometric overlay -->
-    <div class="right-geometric-overlay">
-        <svg width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="100,0 100,100 0,100 30,50 40,0" fill="rgba(0, 136, 255, 0.05)" />
-            <polygon points="100,50 100,100 50,100 70,50" fill="rgba(255, 0, 255, 0.02)" />
-            <line x1="30%" y1="50%" x2="0" y2="100%" stroke="rgba(0, 240, 255, 0.2)" stroke-width="1"/>
-            <line x1="40%" y1="0%" x2="30%" y2="50%" stroke="rgba(0, 240, 255, 0.2)" stroke-width="1"/>
-            <circle cx="30%" cy="50%" r="4" fill="#00f0ff" opacity="0.5"/>
-        </svg>
-    </div>
-
-    <header class="header">
-        <nav class="navbar">
-            <div class="logo">
-                <div class="logo-icon">
-                    <img src="assets/logo.png" alt="Maxiimus Tech Logo" width="36" height="36">
-                </div>
-                <div class="logo-text">
-                    <span class="logo-title">MAXIIMUS TECH</span>
-                    <span class="logo-slogan">TECNOLOGIA RESIDENCIAL</span>
-                </div>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#" class="active">INÍCIO</a></li>
-                <li><a href="#">GALERIA</a></li>
-                <li><a href="#">SOLUÇÕES</a></li>
-                <li><a href="#">PROJETOS</a></li>
-                <li><a href="#">CONTATO</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main class="hero-container">
-        <!-- Background Image Sequence Canvas -->
-        <!-- Background Video -->
-        <video id="hero-video" class="hero-video" autoplay muted playsinline preload="auto">
-            <source src="assets/casa animação.mp4" type="video/mp4">
-            Seu navegador não suporta vídeos.
-        </video>
-
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="font-light">O FUTURO JÁ ESTÁ</span><br>
-                <span class="font-bold">NO PRESENTE</span>
-            </h1>
-            <p class="hero-desc">
-                Transforme sua casa em um ecossistema inteligente que trabalha para você. Controle iluminação, segurança e climatização com um toque ou por comando de voz. Conforto e eficiência que você antes só via nos filmes, agora ao seu alcance.
-            </p>
-        </div>
-
-
-
-
-    </main>
-
-    <!-- Benefícios Section -->
-    <section class="benefits-section">
-        <div class="section-header">
-            <h2 class="section-title">O Poder da Casa Conectada</h2>
-            <p class="section-subtitle">Por que investir em automação residencial?</p>
-        </div>
-        <div class="benefits-grid" id="benefits-grid">
-            <div class="benefit-card">
-                <div class="benefit-icon-wrapper">
-                    <img src="assets/câmera.gif" alt="Segurança" class="benefit-icon-img">
-                </div>
-                <h3>Segurança Máxima</h3>
-                <p>Monitoramento 24h e controle de acesso integrado na palma da sua mão.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon-wrapper">
-                    <img src="assets/poder nas mãos.gif" alt="O Controle" class="benefit-icon-img">
-                </div>
-                <h3>O Controle Nas Suas Mãos</h3>
-                <p>Ter o poder em suas mãos significa utilizar ferramentas que traduzem complexidade em simplicidade.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon-wrapper">
-                    <img src="assets/cinema animação.gif" alt="Conforto" class="benefit-icon-img">
-                </div>
-                <h3>Conforto Absoluto</h3>
-                <p>Modo Cinema. Cenários perfeitamente ajustados a sua rotina</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Alternating Feature Sections -->
-    <section class="feature-split-section">
-        <!-- Segurança - Imagem interativa -->
-        <div class="split-row">
-            <div class="split-content">
-                <span class="feature-tag">PROTEÇÃO</span>
-                <h2>Segurança e Controle de Acesso</h2>
-                <p>O futuro da proteção domiciliar chegou. Nossas fechaduras biométricas inteligentes e câmeras com IA não apenas registram, mas compreendem quem está na sua porta. Receba alertas precisos e conceda acesso temporário a visitantes, de qualquer lugar do mundo.</p>
-                <ul class="feature-list">
-                    <li>✓ Fechaduras com leitor facial e biométrico</li>
-                    <li>✓ Visão noturna avançada e rastreamento</li>
-                    <li>✓ Notificações instantâneas de atividade</li>
-                </ul>
-            </div>
-            <div class="split-visual">
-                <div class="interactive-lock">
-                    <div class="scanner-line"></div>
-                    <div class="lock-icon">
-                        <img src="assets/fechadura.png" alt="Fechadura Inteligente" class="lock-img">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Som -->
-        <div class="split-row reverse">
-            <div class="split-content">
-                <span class="feature-tag">ENTRETENIMENTO</span>
-                <h2>Áudio Imersivo de Alta Fidelidade</h2>
-                <p>Preencha sua casa com som de cinema incrível. Com nossos sistemas de som integrados e invisíveis, sua trilha sonora perfeita segue você pelos cômodos, perfeitamente instalada no teto ou nas paredes sem prejudicar a estética.</p>
-                <ul class="feature-list">
-                    <li>✓ Sincronização perfeita em toda a casa</li>
-                    <li>✓ Acústica ajustada para cada ambiente</li>
-                    <li>✓ Controle por voz simples e intuitivo</li>
-                </ul>
-            </div>
-            <div class="split-visual sound-visual">
-                <img src="assets/receiver.png?v=2" alt="Receiver" class="receiver-img">
-            </div>
-        </div>
-
-        <!-- Iluminacao -->
-        <div class="split-row">
-            <div class="split-content">
-                <span class="feature-tag">AMBIENTAÇÃO</span>
-                <h2>Sistema de Iluminação com Dimmer</h2>
-                <p>A luz certa transforma qualquer espaço. Com o sistema Dimmer, você tem controle total da intensidade e temperatura, criando o clima perfeito para cada momento, desde um jantar íntimo até uma área de trabalho produtiva.</p>
-                <ul class="feature-list">
-                    <li>✓ Controle preciso de intensidade (0-100%)</li>
-                    <li>✓ Transições suaves e automáticas</li>
-                    <li>✓ Otimização do consumo de energia</li>
-                </ul>
-            </div>
-            <div class="split-visual lighting-visual">
-                <img src="assets/iluminação diimer.gif" alt="Iluminação Dimmer" class="dimmer-gif">
-            </div>
-        </div>
-
-        <!-- Climatizacao -->
-        <div class="split-row reverse">
-            <div class="split-content">
-                <span class="feature-tag">CONFORTO</span>
-                <h2>Climatização Inteligente</h2>
-                <p>Encontre sempre a temperatura perfeita. Nossos termostatos inteligentes aprendem sua rotina e preferências, condicionando o ambiente antes mesmo de você chegar em casa, garantindo máximo conforto e eficiência hídrica e elétrica.</p>
-                <ul class="feature-list">
-                    <li>✓ Controle seccional por cômodo</li>
-                    <li>✓ Integração com cortinas para otimização térmica</li>
-                    <li>✓ Monitoramento da qualidade do ar</li>
-                </ul>
-            </div>
-            <div class="split-visual climate-visual">
-                <img src="assets/ar-condicionado.gif" alt="Climatização Inteligente" class="climate-gif">
-            </div>
-        </div>
-    </section>
-
-    <!-- Custom WhatsApp CTA Section -->
-    <section class="cta-section">
-        <div class="cta-box glass-panel">
-            <h2>Pronto para modernizar seu lar?</h2>
-            <p>Fale diretamente com nossos especialistas e solicite um projeto de automação sem compromisso para a sua residência.</p>
-            <a href="https://wa.me/5500000000000" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                </svg>
-                Agendar Orçamento Via WhatsApp
-            </a>
-            <p class="cta-note">*Substitua o link com o seu número de WhatsApp real</p>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="footer-grid">
-            <div class="footer-brand">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <img src="assets/logo.png" alt="Maxiimus Logo" width="30" height="30">
-                    </div>
-                    <div class="logo-text">
-                        <span class="logo-title">MAXIIMUS TECH</span>
-                        <span class="logo-slogan">TECNOLOGIA RESIDENCIAL</span>
-                    </div>
-                </div>
-                <p class="footer-desc">Redefinindo o padrão de vida através da automação residencial avançada, design sofisticado e integração perfeita de sistemas.</p>
-            </div>
-
-            <div class="footer-links">
-                <h3>Soluções</h3>
-                <ul>
-                    <li><a href="#">Segurança & Acesso</a></li>
-                    <li><a href="#">Áudio & Vídeo</a></li>
-                    <li><a href="#">Iluminação Inteligente</a></li>
-                    <li><a href="#">Climatização</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-links">
-                <h3>Empresa</h3>
-                <ul>
-                    <li><a href="#">Sobre Nós</a></li>
-                    <li><a href="#">Nossos Projetos</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Contato</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-contact">
-                <h3>Fale Conosco</h3>
-                <p>maxiimustech@gmail.com</p>
-                <p>+55 (11) 90000-0000</p>
-                <div class="social-icons">
-                    <a href="https://www.instagram.com/maxiimus_tech" target="_blank" rel="noopener noreferrer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
-                    <a href="https://www.tiktok.com/@maxiimus_tech" target="_blank" rel="noopener noreferrer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg></a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Maxiimus Tecnologia Residencial. Todos os direitos reservados.</p>
-        </div>
-    </footer>
-
-    <script>
-        // Interactive Lighting Color Picker
-        function changeColor(element, color) {
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            element.classList.add('active');
-            
-            const bulb = document.getElementById('interactive-bulb');
-            const beam = document.getElementById('bulb-beam');
-            
-            bulb.style.setProperty('--accent-color', color);
-            beam.style.setProperty('--accent-color', color);
-            
-            // Apply color to the beam background
-            let r = parseInt(color.slice(1, 3), 16);
-            let g = parseInt(color.slice(3, 5), 16);
-            let b = parseInt(color.slice(5, 7), 16);
-            beam.style.background = `radial-gradient(ellipse at top, rgba(${r},${g},${b},0.6) 0%, transparent 70%)`;
-        }
-
-
-
-
-        // =============================================
-        // EFEITO BOOMERANG (PING-PONG) NO VÍDEO HERO
-        // =============================================
-        const heroVideo = document.getElementById("hero-video");
-        if (heroVideo) {
-            let direction = 1; // 1 = frente, -1 = trás
-            
-            const animateVideo = () => {
-                if (direction === 1) {
-                    // Se chegou perto do fim, inverte
-                    if (heroVideo.currentTime >= heroVideo.duration - 0.05) {
-                        direction = -1;
-                        heroVideo.pause();
-                    }
-                } else {
-                    // Se estiver voltando, reduz o tempo manualmente
-                    heroVideo.currentTime -= 0.033;
-                    
-                    if (heroVideo.currentTime <= 0.05) {
-                        direction = 1;
-                        heroVideo.play();
-                    }
-                }
-                requestAnimationFrame(animateVideo);
-            };
-
-            // Inicia o monitoramento quando o vídeo estiver pronto
-            heroVideo.addEventListener('loadedmetadata', () => {
-                requestAnimationFrame(animateVideo);
-            });
-            
-            // Caso o vídeo já tenha carregado
-            if (heroVideo.readyState >= 1) {
-                requestAnimationFrame(animateVideo);
-            }
-        }
-        // Interatividade nas caixas de Benefício (Brilho seguindo o mouse)
-        const benefitsGrid = document.getElementById("benefits-grid");
-        if (benefitsGrid) {
-            benefitsGrid.onmousemove = e => {
-                for(const card of document.getElementsByClassName("benefit-card")) {
-                    const rect = card.getBoundingClientRect(),
-                          x = e.clientX - rect.left,
-                          y = e.clientY - rect.top;
-
-                    card.style.setProperty("--mouse-x", `${x}px`);
-                    card.style.setProperty("--mouse-y", `${y}px`);
-                }
-            };
-        }
-    </script>
-</body>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="src/main.tsx"></script>
+  </body>
 </html>
