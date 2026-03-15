@@ -1050,50 +1050,61 @@ body {
     /* ── Hero ── */
     .hero-container {
         flex-direction: column;
-        padding: 4rem 0 2rem 0;
-        min-height: auto;
-        text-align: center;
+        padding: 0; /* Removido padding para deixar ponta a ponta */
+        min-height: 350px;
+        height: auto;
+        display: flex;
+        justify-content: center;
         align-items: center;
-        justify-content: flex-start;
-        overflow: visible;
+        position: relative;
+        overflow: hidden;
     }
 
-    /* Canvas da casa: aparece PRIMEIRO, logo abaixo do título */
-    .hero-canvas {
-        position: relative !important;
-        left: auto !important;
-        top: auto !important;
-        transform: none !important;
-        width: 90% !important;
-        height: 220px !important;
-        border-radius: 20px !important;
-        order: 0; /* segundo: após o título */
-        margin: 0 auto;
-        flex-shrink: 0;
+    /* Vídeo/Canvas da casa: Ponta a ponta */
+    .hero-video, .hero-canvas {
+        position: relative; /* Mantido relative para dar altura ao container se necessário, ou absolute */
+        width: 100% !important;
+        max-width: none !important;
+        height: 350px !important; /* Altura fixa para mobile */
+        object-fit: cover;
+        order: 0; 
+        margin: 0;
         z-index: 1;
+        display: block;
+        filter: brightness(0.8); /* Escurecido para o texto ler melhor */
     }
 
 
 
-    /* Título: aparece PRIMEIRO no mobile */
+    /* Título: Centralizado sobre a animação, subindo mais */
     .hero-content {
-        order: -1;  /* primeiro elemento */
-        flex: 0 0 auto;
-        max-width: 100%;
+        position: absolute;
+        top: 24%; /* Subido mais (de 32% para 24%) conforme solicitado */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
         text-align: center;
-        margin-left: 0;
-        margin-top: 0;
-        padding: 1.5rem 5vw 0 5vw;
+        z-index: 10;
+        margin: 0;
+        padding: 0;
+        pointer-events: none; /* Não atrapalha cliques se necessário */
     }
 
     .hero-title {
-        font-size: 2rem;
-        letter-spacing: 1px;
+        font-size: 0.8rem; /* Reduzido ao mínimo para não poluir o centro */
+        letter-spacing: 0.5px;
+        margin-bottom: 0.3rem;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.8);
     }
 
     .hero-desc {
-        font-size: 0.88rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.5rem; /* Minimalismo total */
+        line-height: 1.2;
+        margin-bottom: 0;
+        max-width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+        text-shadow: 0 1px 5px rgba(0,0,0,0.8);
     }
 
     /* ── Benefits ── */
@@ -1210,16 +1221,15 @@ body {
    ============================================= */
 @media (max-width: 480px) {
     .hero-title {
-        font-size: 1.7rem;
+        font-size: 0.7rem; /* Tamanho mínimo para micro telas */
+    }
+
+    .hero-video, .hero-canvas {
+        height: 280px !important; /* Menor em telas micro */
     }
 
 
 
-    .hero-canvas {
-        width: 95% !important;
-        height: 180px !important;
-        border-radius: 16px !important;
-    }
 
     .section-title {
         font-size: 1.5rem;
