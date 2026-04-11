@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(gh pr create --title 'chore: add Claude Code launch config for static site preview' --body ':*)"
     ]
   }
 }
