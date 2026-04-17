@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence, useScroll, useInView } from 'framer-motion'
-import { ChevronRight, MessageSquare, X, Menu, ArrowUp, ArrowRight, Shield, Headphones, Cpu } from 'lucide-react'
+import { motion, AnimatePresence, useScroll, useInView, useTransform } from 'framer-motion'
+import { ChevronRight, MessageSquare, X, Menu, ArrowUp, ArrowRight, Shield, Headphones, Cpu, Lightbulb, Waves, Droplets, Tv, Wind, Lock, Wifi, ChevronDown, Trees, Film } from 'lucide-react'
 
 // ⚠️ Atualize com seu número real (código do país + DDD + número, sem espaços)
 const WHATSAPP_NUMBER = '5500000000000'
@@ -247,6 +247,963 @@ function BenefitCard({ img, title, desc, large, onClick }: {
   )
 }
 
+// ─── Casa Inteligente (vídeo + dashboard) ──────────────────────────────────────
+function CasaInteligente() {
+  const touchRef       = useRef<HTMLVideoElement>(null)
+  const entradaRef     = useRef<HTMLVideoElement>(null)
+  const bgMusicRef     = useRef<HTMLAudioElement>(null)
+  const musicTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const musicFadeRef   = useRef<ReturnType<typeof setInterval> | null>(null)
+  const ilumRef      = useRef<HTMLVideoElement>(null)
+  const desligarRef  = useRef<HTMLVideoElement>(null)
+  const saidaRef     = useRef<HTMLVideoElement>(null)
+  const tardeRef     = useRef<HTMLVideoElement>(null)
+  const giroRef      = useRef<HTMLVideoElement>(null)
+  const piscinaRef   = useRef<HTMLVideoElement>(null)
+  const hidroRef     = useRef<HTMLVideoElement>(null)
+  const hidroAnimRef = useRef<HTMLVideoElement>(null)
+  const salaRef      = useRef<HTMLVideoElement>(null)
+  const cinemaRef    = useRef<HTMLVideoElement>(null)
+
+  const [stage,       setStage]       = useState<'idle'|'touch'|'entrada'|'ended'>('idle')
+  const [ilumOn,      setIlumOn]      = useState(false)
+  const [ilumVisible, setIlumVisible] = useState(false)
+  // qual vídeo está ativo no overlay: 'ligar' | 'desligar'
+  const [ilumMode,    setIlumMode]    = useState<'ligar'|'desligar'>('ligar')
+  const [piscinaOn,   setPiscinaOn]   = useState(false)
+  const [hidroOn,     setHidroOn]     = useState(false)
+  const [tvOn,        setTvOn]        = useState(false)
+  const [acOn,        setAcOn]        = useState(false)
+  const [lockOn,      setLockOn]      = useState(true)
+  const [touchDimmed,     setTouchDimmed]     = useState(false)
+  const [salaVisible,     setSalaVisible]     = useState(false)
+  const [cinemaVisible,   setCinemaVisible]   = useState(false)
+  const [cinemaAvailable, setCinemaAvailable] = useState(false)
+  const [jardimOn,    setJardimOn]    = useState(false)
+  const [jardimVisible, setJardimVisible] = useState(false)
+  // 'saindo' → 'tarde' → 'giro' (sequência automática)
+  const [jardimPhase,    setJardimPhase]    = useState<'saindo'|'tarde'|'giro'>('saindo')
+  const [piscinaVisible, setPiscinaVisible] = useState(false)
+  const [hidroVisible,   setHidroVisible]   = useState(false)
+  const [hidroPhase,     setHidroPhase]     = useState<'intro'|'loop'>('intro')
+
+  const LIGAR_SPEED    = 1.75
+  const DESLIGAR_SPEED = 2.0   // desligar um pouco mais rápido
+
+  const activateIlum = () => {
+    if (!ilumOn) {
+      // ── LIGA ──────────────────────────────────────────────
+      const v = ilumRef.current
+      if (!v) return
+      setIlumOn(true)
+      setIlumVisible(true)
+      setIlumMode('ligar')
+      v.currentTime = 0
+      v.playbackRate = LIGAR_SPEED
+      v.play().catch(() => {})
+    } else {
+      // ── DESLIGA ────────────────────────────────────────────
+      const v  = ilumRef.current
+      const vd = desligarRef.current
+      if (!v || !vd) return
+      setIlumOn(false)
+      setIlumMode('desligar')
+      v.pause()
+      vd.currentTime = 0
+      vd.playbackRate = DESLIGAR_SPEED
+      vd.play().catch(() => {})
+    }
+  }
+
+  const onIlumEnded    = () => { ilumRef.current?.pause() }
+  const onDesligarEnded = () => { setIlumVisible(false) }
+
+  // ── Led Piscina ──────────────────────────────────────────────────────────────
+  // ── Smart TV → sala.mp4 ──────────────────────────────────────────────────────
+  const activateTv = () => {
+    if (!tvOn) {
+      const v = salaRef.current
+      if (!v) return
+      setTvOn(true)
+      setSalaVisible(true)
+      setCinemaAvailable(false)
+      v.currentTime = 0
+      v.play().catch(() => {})
+    } else {
+      salaRef.current?.pause()
+      cinemaRef.current?.pause()
+      setTvOn(false)
+      setSalaVisible(false)
+      setCinemaVisible(false)
+      setCinemaAvailable(false)
+    }
+  }
+  const onSalaEnded = () => {
+    salaRef.current?.pause()
+    setCinemaAvailable(true)  // revela botão Modo Cinema
+  }
+
+  // ── Modo Cinema → cinema.mp4 ─────────────────────────────────────────────────
+  const activateCinema = () => {
+    const v = cinemaRef.current
+    if (!v) return
+    setCinemaVisible(true)
+    v.currentTime = 0
+    v.play().catch(() => {})
+  }
+  const onCinemaEnded = () => { cinemaRef.current?.pause() }
+
+  // ── Led Piscina ──────────────────────────────────────────────────────────────
+  const activatePiscina = () => {
+    if (!piscinaOn) {
+      const v = piscinaRef.current
+      if (!v) return
+      setPiscinaOn(true)
+      setPiscinaVisible(true)
+      v.currentTime = 0
+      v.play().catch(() => {})
+    } else {
+      piscinaRef.current?.pause()
+      setPiscinaOn(false)
+      setPiscinaVisible(false)
+    }
+  }
+  const onPiscinaEnded = () => { piscinaRef.current?.pause() }
+
+  // ── Hidromassagem ─────────────────────────────────────────────────────────────
+  const activateHidro = () => {
+    if (!hidroOn) {
+      const v = hidroRef.current
+      if (!v) return
+      setHidroOn(true)
+      setHidroVisible(true)
+      setHidroPhase('intro')
+      v.currentTime = 0
+      v.play().catch(() => {})
+    } else {
+      hidroRef.current?.pause()
+      hidroAnimRef.current?.pause()
+      setHidroOn(false)
+      setHidroVisible(false)
+      setHidroPhase('intro')
+    }
+  }
+  // intro termina → cross-fade suave para o loop
+  const onHidroEnded = () => {
+    const va = hidroAnimRef.current
+    if (!va) return
+    va.currentTime = 0
+    va.play().catch(() => {}).then(() => {
+      // só muda a fase após o loop começar a tocar
+      setHidroPhase('loop')
+    })
+  }
+
+  // ── Jardim ────────────────────────────────────────────────────────────────────
+  const activateJardim = () => {
+    if (!jardimOn) {
+      const vs = saidaRef.current
+      if (!vs) return
+      setJardimOn(true)
+      setJardimVisible(true)
+      setJardimPhase('saindo')
+      vs.currentTime = 0
+      vs.play().catch(() => {})
+    } else {
+      saidaRef.current?.pause()
+      tardeRef.current?.pause()
+      giroRef.current?.pause()
+      setJardimOn(false)
+      setJardimVisible(false)
+    }
+  }
+
+  // saindo da sala → tarde
+  const onSaidaEnded = () => {
+    const vt = tardeRef.current
+    if (!vt) return
+    setJardimPhase('tarde')
+    vt.currentTime = 0
+    vt.play().catch(() => {})
+  }
+
+  // tarde → giro (panorâmica)
+  const onTardeEnded = () => {
+    const vg = giroRef.current
+    if (!vg) return
+    setJardimPhase('giro')
+    vg.currentTime = 0
+    vg.play().catch(() => {})
+  }
+
+  // giro para no último frame
+  const onGiroEnded = () => { giroRef.current?.pause() }
+
+  const stopMusic = () => {
+    if (musicTimerRef.current) { clearTimeout(musicTimerRef.current); musicTimerRef.current = null }
+    if (musicFadeRef.current)  { clearInterval(musicFadeRef.current);  musicFadeRef.current  = null }
+    const music = bgMusicRef.current
+    if (!music) return
+    const fade = setInterval(() => {
+      music.volume = Math.max(music.volume - 0.02, 0)
+      if (music.volume <= 0) { music.pause(); music.currentTime = 0; clearInterval(fade) }
+    }, 80)
+  }
+
+  const startMusicDelayed = () => {
+    if (musicTimerRef.current) clearTimeout(musicTimerRef.current)
+    musicTimerRef.current = setTimeout(() => {
+      const music = bgMusicRef.current
+      if (!music) return
+      music.currentTime = 0
+      music.volume = 0
+      music.play().catch(() => {})
+      if (musicFadeRef.current) clearInterval(musicFadeRef.current)
+      let vol = 0
+      musicFadeRef.current = setInterval(() => {
+        vol = Math.min(vol + 0.01, 0.18)
+        music.volume = vol
+        if (vol >= 0.18) { clearInterval(musicFadeRef.current!); musicFadeRef.current = null }
+      }, 100)
+    }, 5000)
+  }
+
+  // clique no botão → toca touch.mp4
+  const playTouch = () => {
+    const v = touchRef.current
+    if (!v) return
+    setStage('touch')
+    setTouchDimmed(false)
+    v.currentTime = 0
+    v.playbackRate = 2.0
+    v.play().catch(() => {})
+    setTimeout(() => setTouchDimmed(true), 3000)
+    startMusicDelayed()
+  }
+
+  // touch.mp4 terminou → toca entrada casa.mp4
+  const onTouchEnded = () => {
+    const v = entradaRef.current
+    if (!v) return
+    setStage('entrada')
+    v.currentTime = 0
+    v.play().catch(() => {})
+  }
+
+  return (
+    <>
+      {/* Música de fundo — sempre no DOM */}
+      <audio ref={bgMusicRef} src="/assets/musica fundo.mp3" loop preload="auto" />
+
+      {/* ════════════════════════════════════════════════════════════════
+          SEÇÃO PRINCIPAL — touch → entrada casa → dashboard
+      ═══════════════════════════════════════════════════════════════ */}
+      <section className={`overflow-hidden ${stage !== 'idle' ? 'fixed inset-0 z-[195] bg-[#020406]' : 'relative w-full aspect-video md:min-h-screen md:aspect-auto'}`}>
+
+        {/* ── Vídeo TOUCH — fundo idle, cross-fade ao iniciar ── */}
+        <video
+          ref={touchRef}
+          className={`absolute inset-0 w-full h-full object-cover z-[1] pointer-events-none transition-opacity duration-[1500ms] ${stage === 'idle' ? 'opacity-100' : stage === 'touch' ? (touchDimmed ? 'opacity-20' : 'opacity-100') : 'opacity-0'}`}
+          playsInline preload="auto"
+          onEnded={onTouchEnded}
+        >
+          <source src="/assets/touch.mp4" type="video/mp4" />
+        </video>
+
+        {/* ── Vídeo ENTRADA — aparece após touch terminar ── */}
+        <video
+          ref={entradaRef}
+          className={`absolute inset-0 w-full h-full object-cover z-[1] pointer-events-none transition-opacity duration-700 ${stage === 'entrada' || stage === 'ended' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto"
+          onEnded={() => setStage('ended')}
+        >
+          <source src="/assets/entrada casa.mp4" type="video/mp4" />
+        </video>
+
+        {/* Gradientes de borda */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 z-[2] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/40 via-transparent to-transparent z-[2] pointer-events-none" />
+
+        {/* ── Texto esquerdo + botão — some quando touch começa ── */}
+        <AnimatePresence>
+          {stage === 'idle' && (
+            <motion.div
+              key="intro-text"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.6 }}
+              className="absolute left-4 md:left-[4vw] top-[8%] md:top-1/2 md:-translate-y-1/2 z-10 max-w-[60%] md:max-w-xl space-y-3 md:space-y-5 pr-2 md:pr-0"
+            >
+              <span className="inline-block bg-accent/10 border border-accent/20 text-accent text-xs font-bold tracking-[3px] uppercase px-4 py-2 rounded-full">
+                Experiência Real
+              </span>
+              <h2 className="font-['Rajdhani'] text-xl sm:text-3xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wider leading-tight">
+                <span className="text-accent">SUA CASA,</span><br />
+                <span>COMO VOCÊ IMAGINOU</span>
+              </h2>
+              <p className="hidden sm:block text-text-secondary text-sm md:text-base leading-relaxed max-w-md">
+                Cada detalhe pensado para o seu conforto. Da entrada ao relaxamento, tudo integrado e no controle das suas mãos.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Botão PLAY central — apenas no estado idle ── */}
+        <AnimatePresence>
+          {stage === 'idle' && (
+            <motion.button
+              key="center-play"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              onClick={playTouch}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.93 }}
+              className="absolute top-[58%] left-1/2 md:left-[46%] -translate-x-1/2 z-10 flex flex-col items-center gap-3 group"
+            >
+              {/* Anel pulsante */}
+              <span className="relative flex items-center justify-center">
+                <span className="absolute w-20 h-20 rounded-full bg-accent/20 animate-ping" />
+                <span className="relative w-16 h-16 rounded-full bg-accent/90 backdrop-blur-md flex items-center justify-center shadow-[0_0_40px_rgba(94,234,212,0.5)] group-hover:bg-accent transition-colors duration-300">
+                  <svg className="w-6 h-6 fill-black translate-x-[2px]" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </span>
+              </span>
+              <span className="text-white/70 text-xs font-medium tracking-widest uppercase group-hover:text-white transition-colors duration-300">
+                Conhecer o projeto
+              </span>
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Badge reproduzindo */}
+        <AnimatePresence>
+          {(stage === 'touch' || stage === 'entrada') && (
+            <motion.div
+              key="playing-badge"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-2 rounded-full bg-black/30 border border-white/10 backdrop-blur-md"
+            >
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-xs text-white/60 tracking-wider">reproduzindo</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Botão fechar fullscreen */}
+        {stage !== 'idle' && (
+          <button
+            onClick={() => { setStage('idle'); stopMusic() }}
+            className="absolute top-4 left-4 z-30 w-8 h-8 rounded-full bg-black/40 border border-white/20 flex items-center justify-center text-white/70 hover:bg-black/60 transition-colors backdrop-blur-sm"
+            aria-label="Fechar"
+          >
+            <X size={14} />
+          </button>
+        )}
+
+        {/* Hint após terminar */}
+        {stage === 'ended' && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 text-white/30 text-xs"
+          >
+            <ChevronDown size={14} className="animate-bounce" />
+            Explore os controles →
+          </motion.div>
+        )}
+        {/* ── Dashboard discreto — aparece à direita após o vídeo terminar ── */}
+        <AnimatePresence>
+          {stage === 'ended' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 30 }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.3 }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-36 md:right-6 md:w-56"
+            >
+              {/* Card do dashboard */}
+              <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+
+                {/* Header */}
+                <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                    <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20">
+                    <Wifi size={8} className="text-accent" />
+                    <span className="text-[9px] text-accent font-bold">Online</span>
+                  </div>
+                </div>
+
+                {/* Botões de controle */}
+                <div className="p-2 md:p-3 space-y-1.5 md:space-y-2">
+
+                  {/* Iluminação */}
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={activateIlum}
+                    className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${
+                      ilumOn
+                        ? 'bg-amber-400/15 border-amber-400/35 shadow-[0_0_16px_rgba(251,191,36,0.12)]'
+                        : 'bg-white/[0.04] border-white/8 hover:bg-white/[0.07] hover:border-white/15'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${ilumOn ? 'bg-amber-400/25' : 'bg-white/5'}`}>
+                      <Lightbulb size={14} className={ilumOn ? 'text-amber-300' : 'text-white/40'} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold text-white/70 leading-none">Iluminação</p>
+                      <p className="text-[9px] text-white/35 mt-0.5">{ilumOn ? 'Ativa' : 'Sala principal'}</p>
+                    </div>
+                    <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${ilumOn ? 'bg-amber-400' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${ilumOn ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                  </motion.button>
+
+                  {/* Led Piscina */}
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={activatePiscina}
+                    className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${
+                      piscinaOn
+                        ? 'bg-blue-400/15 border-blue-400/35 shadow-[0_0_16px_rgba(96,165,250,0.12)]'
+                        : 'bg-white/[0.04] border-white/8 hover:bg-white/[0.07] hover:border-white/15'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${piscinaOn ? 'bg-blue-400/25' : 'bg-white/5'}`}>
+                      <Waves size={14} className={piscinaOn ? 'text-blue-300' : 'text-white/40'} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold text-white/70 leading-none">Led Piscina</p>
+                      <p className="text-[9px] text-white/35 mt-0.5">{piscinaOn ? 'Ativo' : 'Área externa'}</p>
+                    </div>
+                    <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${piscinaOn ? 'bg-blue-400' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${piscinaOn ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                  </motion.button>
+
+                  {/* Hidromassagem */}
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={activateHidro}
+                    className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${
+                      hidroOn
+                        ? 'bg-cyan-400/15 border-cyan-400/35 shadow-[0_0_16px_rgba(34,211,238,0.12)]'
+                        : 'bg-white/[0.04] border-white/8 hover:bg-white/[0.07] hover:border-white/15'
+                    }`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${hidroOn ? 'bg-cyan-400/25' : 'bg-white/5'}`}>
+                      <Droplets size={14} className={hidroOn ? 'text-cyan-300' : 'text-white/40'} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold text-white/70 leading-none">Hidromassagem</p>
+                      <p className="text-[9px] text-white/35 mt-0.5">{hidroOn ? 'Ativa' : 'Área de lazer'}</p>
+                    </div>
+                    <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${hidroOn ? 'bg-cyan-400' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${hidroOn ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                  </motion.button>
+
+                  {/* Divisor */}
+                  <div className="border-t border-white/5 my-1" />
+
+                  {/* TV + Clima em linha */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={activateTv}
+                      className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl border transition-all duration-300 ${tvOn ? 'bg-blue-500/10 border-blue-500/25' : 'bg-white/[0.03] border-white/8 hover:bg-white/[0.06]'}`}>
+                      <Tv size={14} className={tvOn ? 'text-blue-400' : 'text-white/30'} />
+                      <span className="text-[9px] text-white/50 font-bold">Smart TV</span>
+                      <span className={`text-[8px] font-bold ${tvOn ? 'text-blue-400' : 'text-white/20'}`}>{tvOn ? 'ON' : 'OFF'}</span>
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={() => setAcOn(v => !v)}
+                      className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl border transition-all duration-300 ${acOn ? 'bg-cyan-500/10 border-cyan-500/25' : 'bg-white/[0.03] border-white/8 hover:bg-white/[0.06]'}`}>
+                      <Wind size={14} className={acOn ? 'text-cyan-400' : 'text-white/30'} />
+                      <span className="text-[9px] text-white/50 font-bold">Clima</span>
+                      <span className={`text-[8px] font-bold ${acOn ? 'text-cyan-400' : 'text-white/20'}`}>{acOn ? '22°C' : 'OFF'}</span>
+                    </motion.button>
+                  </div>
+
+                  {/* Modo Cinema — aparece após sala.mp4 terminar */}
+                  <AnimatePresence>
+                    {cinemaAvailable && (
+                      <motion.button
+                        key="modo-cinema"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.4 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={activateCinema}
+                        className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${cinemaVisible ? 'bg-purple-500/15 border-purple-500/35' : 'bg-white/[0.04] border-white/10 hover:bg-white/[0.07]'}`}
+                      >
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cinemaVisible ? 'bg-purple-500/25' : 'bg-white/5'}`}>
+                          <Film size={14} className={cinemaVisible ? 'text-purple-300' : 'text-white/40'} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[10px] font-bold text-white/70 leading-none">Modo Cinema</p>
+                          <p className={`text-[9px] mt-0.5 ${cinemaVisible ? 'text-purple-300/60' : 'text-white/35'}`}>{cinemaVisible ? 'Ativo' : 'Sala principal'}</p>
+                        </div>
+                        <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${cinemaVisible ? 'bg-purple-500' : 'bg-white/10'}`}>
+                          <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${cinemaVisible ? 'right-0.5' : 'left-0.5'}`} />
+                        </div>
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Fechadura */}
+                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => setLockOn(v => !v)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl border transition-all duration-300 ${lockOn ? 'bg-accent/8 border-accent/20' : 'bg-red-500/10 border-red-500/25'}`}>
+                    <Lock size={12} className={lockOn ? 'text-accent' : 'text-red-400'} />
+                    <span className="text-[10px] font-bold text-white/60">Fechadura</span>
+                    <span className={`ml-auto text-[9px] font-bold ${lockOn ? 'text-accent' : 'text-red-400'}`}>{lockOn ? 'Trancada' : 'Aberta'}</span>
+                  </motion.button>
+
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════
+          OVERLAY iluminação — vídeo sempre no DOM, visível via CSS
+      ════════════════════════════════════════════════════════ */}
+      <div className={`fixed inset-0 z-[200] overflow-hidden bg-[#020406] transition-opacity duration-500 ${ilumVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+
+        <video
+          ref={ilumRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${ilumMode === 'ligar' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" onEnded={onIlumEnded}
+        >
+          <source src="/assets/iluminação sala.mp4" type="video/mp4" />
+        </video>
+        <video
+          ref={desligarRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${ilumMode === 'desligar' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" onEnded={onDesligarEnded}
+        >
+          <source src="/assets/desligar iluminação.mp4" type="video/mp4" />
+        </video>
+
+        {/* Gradientes de borda */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/40 via-transparent to-transparent pointer-events-none z-[1]" />
+
+        {/* Dashboard à direita */}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[10] w-36 md:right-6 md:w-56">
+          <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+              </div>
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full border ${ilumOn ? 'bg-amber-400/15 border-amber-400/30' : 'bg-white/5 border-white/10'}`}>
+                <Lightbulb size={8} className={ilumOn ? 'text-amber-300' : 'text-white/30'} />
+                <span className={`text-[9px] font-bold ${ilumOn ? 'text-amber-300' : 'text-white/30'}`}>{ilumOn ? 'Ativa' : 'Desligando'}</span>
+              </div>
+            </div>
+            <div className="p-2 md:p-3 space-y-1.5 md:space-y-2">
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateIlum}
+                className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${ilumOn ? 'bg-amber-400/15 border-amber-400/35' : 'bg-white/[0.04] border-white/10'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${ilumOn ? 'bg-amber-400/25' : 'bg-white/5'}`}>
+                  <Lightbulb size={14} className={ilumOn ? 'text-amber-300' : 'text-white/40'} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Iluminação</p>
+                  <p className={`text-[9px] mt-0.5 ${ilumOn ? 'text-amber-300/60' : 'text-white/35'}`}>{ilumOn ? 'Ativa' : 'Sala principal'}</p>
+                </div>
+                <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${ilumOn ? 'bg-amber-400' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${ilumOn ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activatePiscina}
+                className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${piscinaOn ? 'bg-blue-400/15 border-blue-400/35' : 'bg-white/[0.04] border-white/8'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${piscinaOn ? 'bg-blue-400/25' : 'bg-white/5'}`}>
+                  <Waves size={14} className={piscinaOn ? 'text-blue-300' : 'text-white/40'} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Led Piscina</p>
+                  <p className="text-[9px] text-white/35 mt-0.5">{piscinaOn ? 'Ativo' : 'Área externa'}</p>
+                </div>
+                <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${piscinaOn ? 'bg-blue-400' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${piscinaOn ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateHidro}
+                className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${hidroOn ? 'bg-cyan-400/15 border-cyan-400/35' : 'bg-white/[0.04] border-white/8'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${hidroOn ? 'bg-cyan-400/25' : 'bg-white/5'}`}>
+                  <Droplets size={14} className={hidroOn ? 'text-cyan-300' : 'text-white/40'} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Hidromassagem</p>
+                  <p className="text-[9px] text-white/35 mt-0.5">{hidroOn ? 'Ativa' : 'Área de lazer'}</p>
+                </div>
+                <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${hidroOn ? 'bg-cyan-400' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${hidroOn ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+              </motion.button>
+
+              {/* ── Jardim ── */}
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateJardim}
+                className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${jardimOn ? 'bg-green-400/15 border-green-400/35' : 'bg-white/[0.04] border-white/8'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${jardimOn ? 'bg-green-400/25' : 'bg-white/5'}`}>
+                  <Trees size={14} className={jardimOn ? 'text-green-300' : 'text-white/40'} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Jardim</p>
+                  <p className={`text-[9px] mt-0.5 ${jardimOn ? 'text-green-300/60' : 'text-white/35'}`}>
+                    {jardimOn ? (jardimPhase === 'saindo' ? 'Indo ao jardim...' : 'Vista externa') : 'Área externa'}
+                  </p>
+                </div>
+                <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${jardimOn ? 'bg-green-400' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${jardimOn ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+              </motion.button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+          OVERLAY jardim — transição + cena tarde
+      ════════════════════════════════════════════════════════ */}
+      <div className={`fixed inset-0 z-[200] overflow-hidden bg-[#020406] transition-opacity duration-500 ${jardimVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+
+        <video
+          ref={saidaRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${jardimPhase === 'saindo' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" onEnded={onSaidaEnded}
+        >
+          <source src="/assets/saindo da sala.mp4" type="video/mp4" />
+        </video>
+        <video
+          ref={tardeRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${jardimPhase === 'tarde' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" onEnded={onTardeEnded}
+        >
+          <source src="/assets/tarde.mp4" type="video/mp4" />
+        </video>
+        <video
+          ref={giroRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${jardimPhase === 'giro' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" onEnded={onGiroEnded}
+        >
+          <source src="/assets/giro.mp4" type="video/mp4" />
+        </video>
+
+        {/* Gradientes de borda */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/40 via-transparent to-transparent pointer-events-none z-[1]" />
+
+        {/* Dashboard à direita (mesmo do overlay de iluminação) */}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[10] w-36 md:right-6 md:w-56">
+          <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-green-400/15 border-green-400/30">
+                <Trees size={8} className="text-green-300" />
+                <span className="text-[9px] font-bold text-green-300">Jardim</span>
+              </div>
+            </div>
+            <div className="p-2 md:p-3 space-y-1.5 md:space-y-2">
+              {/* Jardim */}
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateJardim}
+                className="w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left bg-green-400/15 border-green-400/35">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-green-400/25">
+                  <Trees size={14} className="text-green-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Jardim</p>
+                  <p className="text-[9px] mt-0.5 text-green-300/60">
+                    {jardimPhase === 'saindo' ? 'Indo ao jardim...' : jardimPhase === 'tarde' ? 'Vista externa' : 'Vista panorâmica'}
+                  </p>
+                </div>
+                <div className="w-7 h-3.5 rounded-full relative bg-green-400 shrink-0">
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white shadow" />
+                </div>
+              </motion.button>
+
+              {/* Led Piscina */}
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activatePiscina}
+                className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${piscinaOn ? 'bg-blue-400/15 border-blue-400/35' : 'bg-white/[0.04] border-white/8'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${piscinaOn ? 'bg-blue-400/25' : 'bg-white/5'}`}>
+                  <Waves size={14} className={piscinaOn ? 'text-blue-300' : 'text-white/40'} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Led Piscina</p>
+                  <p className={`text-[9px] mt-0.5 ${piscinaOn ? 'text-blue-300/60' : 'text-white/35'}`}>{piscinaOn ? 'Ativo' : 'Área externa'}</p>
+                </div>
+                <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${piscinaOn ? 'bg-blue-400' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${piscinaOn ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+              </motion.button>
+
+              {/* Hidromassagem */}
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateHidro}
+                className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${hidroOn ? 'bg-cyan-400/15 border-cyan-400/35' : 'bg-white/[0.04] border-white/8'}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${hidroOn ? 'bg-cyan-400/25' : 'bg-white/5'}`}>
+                  <Droplets size={14} className={hidroOn ? 'text-cyan-300' : 'text-white/40'} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Hidromassagem</p>
+                  <p className={`text-[9px] mt-0.5 ${hidroOn ? 'text-cyan-300/60' : 'text-white/35'}`}>{hidroOn ? 'Ativa' : 'Área de lazer'}</p>
+                </div>
+                <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${hidroOn ? 'bg-cyan-400' : 'bg-white/10'}`}>
+                  <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${hidroOn ? 'right-0.5' : 'left-0.5'}`} />
+                </div>
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+          OVERLAY Smart TV — sala.mp4
+      ════════════════════════════════════════════════════════ */}
+      <div className={`fixed inset-0 z-[210] overflow-hidden bg-[#020406] transition-opacity duration-500 ${salaVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <video ref={salaRef} className="absolute inset-0 w-full h-full object-cover"
+          playsInline preload="auto" onEnded={onSalaEnded}>
+          <source src="/assets/sala.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/40 via-transparent to-transparent pointer-events-none z-[1]" />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[10] w-36 md:right-6 md:w-56">
+          <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-blue-500/15 border-blue-500/30">
+                <Tv size={8} className="text-blue-400" />
+                <span className="text-[9px] font-bold text-blue-400">ON</span>
+              </div>
+            </div>
+            <div className="p-2 md:p-3 space-y-1.5 md:space-y-2">
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateTv}
+                className="w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border text-left bg-blue-500/10 border-blue-500/25">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-500/20">
+                  <Tv size={14} className="text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Smart TV</p>
+                  <p className="text-[9px] mt-0.5 text-blue-400/60">Sala principal</p>
+                </div>
+                <div className="w-7 h-3.5 rounded-full relative bg-blue-500 shrink-0">
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white shadow" />
+                </div>
+              </motion.button>
+              <AnimatePresence>
+                {cinemaAvailable && (
+                  <motion.button
+                    key="cinema-btn-sala"
+                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    whileTap={{ scale: 0.97 }} onClick={activateCinema}
+                    className={`w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left ${cinemaVisible ? 'bg-purple-500/15 border-purple-500/35' : 'bg-white/[0.04] border-white/10'}`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cinemaVisible ? 'bg-purple-500/25' : 'bg-white/5'}`}>
+                      <Film size={14} className={cinemaVisible ? 'text-purple-300' : 'text-white/40'} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-bold text-white/70 leading-none">Modo Cinema</p>
+                      <p className={`text-[9px] mt-0.5 ${cinemaVisible ? 'text-purple-300/60' : 'text-white/35'}`}>{cinemaVisible ? 'Ativo' : 'Sala principal'}</p>
+                    </div>
+                    <div className={`w-7 h-3.5 rounded-full relative transition-colors shrink-0 ${cinemaVisible ? 'bg-purple-500' : 'bg-white/10'}`}>
+                      <div className={`absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transition-all ${cinemaVisible ? 'right-0.5' : 'left-0.5'}`} />
+                    </div>
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+          OVERLAY Modo Cinema — cinema.mp4
+      ════════════════════════════════════════════════════════ */}
+      <div className={`fixed inset-0 z-[220] overflow-hidden bg-[#020406] transition-opacity duration-700 ${cinemaVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <video ref={cinemaRef} className="absolute inset-0 w-full h-full object-cover"
+          playsInline preload="auto" onEnded={onCinemaEnded}>
+          <source src="/assets/cinema.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 pointer-events-none z-[1]" />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[10] w-36 md:right-6 md:w-56">
+          <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-purple-500/15 border-purple-500/30">
+                <Film size={8} className="text-purple-300" />
+                <span className="text-[9px] font-bold text-purple-300">Cinema</span>
+              </div>
+            </div>
+            <div className="p-2 md:p-3">
+              <motion.button whileTap={{ scale: 0.97 }} onClick={() => { setCinemaVisible(false); cinemaRef.current?.pause() }}
+                className="w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border text-left bg-purple-500/15 border-purple-500/35">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-purple-500/25">
+                  <Film size={14} className="text-purple-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Modo Cinema</p>
+                  <p className="text-[9px] mt-0.5 text-purple-300/60">Ativo</p>
+                </div>
+                <div className="w-7 h-3.5 rounded-full relative bg-purple-500 shrink-0">
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white shadow" />
+                </div>
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+          OVERLAY Led Piscina
+      ════════════════════════════════════════════════════════ */}
+      <div className={`fixed inset-0 z-[210] overflow-hidden bg-[#020406] transition-opacity duration-500 ${piscinaVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <video
+          ref={piscinaRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          playsInline preload="auto"
+          onEnded={onPiscinaEnded}
+        >
+          <source src="/assets/led piscina.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/40 via-transparent to-transparent pointer-events-none z-[1]" />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[10] w-36 md:right-6 md:w-56">
+          <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-blue-400/15 border-blue-400/30">
+                <Waves size={8} className="text-blue-300" />
+                <span className="text-[9px] font-bold text-blue-300">Ativo</span>
+              </div>
+            </div>
+            <div className="p-2 md:p-3">
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activatePiscina}
+                className="w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left bg-blue-400/15 border-blue-400/35">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-blue-400/25">
+                  <Waves size={14} className="text-blue-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Led Piscina</p>
+                  <p className="text-[9px] mt-0.5 text-blue-300/60">Área externa</p>
+                </div>
+                <div className="w-7 h-3.5 rounded-full relative bg-blue-400 shrink-0">
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white shadow" />
+                </div>
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════
+          OVERLAY Hidromassagem
+      ════════════════════════════════════════════════════════ */}
+      <div className={`fixed inset-0 z-[210] overflow-hidden bg-[#020406] transition-opacity duration-500 ${hidroVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <video
+          ref={hidroRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hidroPhase === 'intro' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" onEnded={onHidroEnded}
+        >
+          <source src="/assets/hidromassagem.mp4" type="video/mp4" />
+        </video>
+        <video
+          ref={hidroAnimRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hidroPhase === 'loop' ? 'opacity-100' : 'opacity-0'}`}
+          playsInline preload="auto" loop
+        >
+          <source src="/assets/hidro animação.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/20 via-transparent to-[#020406]/20 pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/40 via-transparent to-transparent pointer-events-none z-[1]" />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-[10] w-36 md:right-6 md:w-56">
+          <div className="rounded-2xl border border-white/10 bg-black/55 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="px-2.5 pt-2.5 pb-2 md:px-3.5 md:pt-3.5 md:pb-2.5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <img src="/assets/logo.png" alt="" className="w-4 h-4 opacity-70" />
+                <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Maxiimus</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border bg-cyan-400/15 border-cyan-400/30">
+                <Droplets size={8} className="text-cyan-300" />
+                <span className="text-[9px] font-bold text-cyan-300">Ativa</span>
+              </div>
+            </div>
+            <div className="p-2 md:p-3">
+              <motion.button whileTap={{ scale: 0.97 }} onClick={activateHidro}
+                className="w-full flex items-center gap-2 px-2 py-2 md:px-3.5 md:py-2.5 rounded-xl border transition-all duration-300 text-left bg-cyan-400/15 border-cyan-400/35">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-cyan-400/25">
+                  <Droplets size={14} className="text-cyan-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white/70 leading-none">Hidromassagem</p>
+                  <p className="text-[9px] mt-0.5 text-cyan-300/60">Área de lazer</p>
+                </div>
+                <div className="w-7 h-3.5 rounded-full relative bg-cyan-400 shrink-0">
+                  <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white shadow" />
+                </div>
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </>
+  )
+}
+
+// ─── Marquee Strip ─────────────────────────────────────────────────────────────
+const marqueeItems = [
+  { text: 'Automação Residencial', icon: '✦' },
+  { text: 'Iluminação Inteligente', icon: '✦' },
+  { text: 'Segurança 24h',         icon: '✦' },
+  { text: 'Controle por Voz',      icon: '✦' },
+  { text: 'Climatização Smart',    icon: '✦' },
+  { text: 'Câmeras com IA',        icon: '✦' },
+  { text: 'Led Piscina',           icon: '✦' },
+  { text: 'Modo Cinema',           icon: '✦' },
+  { text: 'Fechadura Biométrica',  icon: '✦' },
+  { text: 'Áudio Hi-Fi',           icon: '✦' },
+]
+
+function MarqueeStrip() {
+  const doubled = [...marqueeItems, ...marqueeItems]
+  return (
+    <div className="relative w-full overflow-hidden py-5 z-20 border-y border-white/[0.06] bg-gradient-to-r from-[#020406] via-[#0a1520]/60 to-[#020406]">
+      {/* fade esquerda */}
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-24 z-10 bg-gradient-to-r from-[#020406] to-transparent" />
+      {/* fade direita */}
+      <div className="pointer-events-none absolute right-0 top-0 h-full w-24 z-10 bg-gradient-to-l from-[#020406] to-transparent" />
+
+      <div className="marquee-track">
+        {doubled.map((item, i) => (
+          <div key={i} className="flex items-center gap-3 px-6 whitespace-nowrap select-none">
+            <span className="text-accent text-xs">{item.icon}</span>
+            <span className="text-white/50 text-xs font-semibold tracking-[0.2em] uppercase hover:text-accent transition-colors duration-300 cursor-default">
+              {item.text}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Feature Row ───────────────────────────────────────────────────────────────
 function FeatureRow({ tag, title, desc, list, visual, reverse }: {
   tag: string; title: string; desc: string; list: string[]; visual: React.ReactNode; reverse?: boolean
@@ -261,8 +1218,8 @@ function FeatureRow({ tag, title, desc, list, visual, reverse }: {
     >
       <div className="flex-1 space-y-6">
         <span className="feature-tag">{tag}</span>
-        <h2 className="text-4xl font-bold leading-tight">{title}</h2>
-        <p className="text-text-secondary text-lg leading-relaxed">{desc}</p>
+        <h2 className="text-3xl md:text-4xl font-bold leading-tight">{title}</h2>
+        <p className="text-text-secondary text-base md:text-lg leading-relaxed">{desc}</p>
         <ul className="space-y-3">
           {list.map((item, i) => (
             <motion.li
@@ -279,8 +1236,8 @@ function FeatureRow({ tag, title, desc, list, visual, reverse }: {
           ))}
         </ul>
       </div>
-      <div className="flex-1 flex justify-center items-center w-full">
-        <div className="relative bg-teal-500/5 rounded-[2.5rem] p-2 border border-teal-500/10 shadow-[0_0_50px_rgba(20,184,166,0.1)] transition-all duration-500 hover:shadow-[0_0_70px_rgba(20,184,166,0.2)] hover:scale-[1.02]">
+      <div className="flex-1 flex justify-center items-center w-full max-w-sm md:max-w-none mx-auto">
+        <div className="relative bg-teal-500/5 rounded-[2.5rem] p-2 border border-teal-500/10 shadow-[0_0_50px_rgba(20,184,166,0.1)] transition-all duration-500 hover:shadow-[0_0_70px_rgba(20,184,166,0.2)] hover:scale-[1.02] w-full flex justify-center">
           {visual}
         </div>
       </div>
@@ -295,6 +1252,18 @@ function App() {
   const [scrolled, setScrolled] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
   const benefitsRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLElement>(null)
+
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  })
+
+  // vídeo: efeito parallax — sobe mais devagar que o scroll
+  const videoY = useTransform(heroScroll, [0, 1], ['0%', '30%'])
+  // conteúdo: some e sobe levemente ao rolar
+  const contentOpacity = useTransform(heroScroll, [0, 0.55], [1, 0])
+  const contentY       = useTransform(heroScroll, [0, 0.55], [0, -48])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -391,12 +1360,19 @@ function App() {
 
       <main>
         {/* ── HERO ───────────────────────────────────────────────────────────── */}
-        <section id="inicio" className="relative min-h-screen flex items-start px-[4vw] overflow-hidden">
-          <VideoHero />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/60 via-transparent to-[#020406]/60 z-[1] pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020406] via-[#020406]/60 to-transparent z-[2] pointer-events-none" />
+        <section ref={heroRef} id="inicio" className="relative min-h-screen flex items-start px-[4vw] overflow-hidden">
+          {/* parallax wrapper — o vídeo sobe mais devagar que a página */}
+          <motion.div style={{ y: videoY }} className="absolute inset-0 will-change-transform">
+            <VideoHero />
+          </motion.div>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#020406]/15 via-transparent to-[#020406]/15 z-[1] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#020406]/50 via-[#020406]/10 to-transparent z-[2] pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col items-start pt-36 md:pt-52 pb-24 max-w-2xl">
+          {/* conteúdo: desaparece e sobe suavemente ao rolar */}
+          <motion.div
+            style={{ opacity: contentOpacity, y: contentY }}
+            className="relative z-10 flex flex-col items-start pt-36 md:pt-52 pb-24 max-w-2xl will-change-transform"
+          >
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -412,7 +1388,7 @@ function App() {
                 Automação Residencial Premium
               </motion.span>
 
-              <h1 className="font-['Rajdhani'] text-5xl md:text-6xl lg:text-7xl leading-tight uppercase tracking-wider">
+              <h1 className="font-['Rajdhani'] text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight uppercase tracking-wider">
                 <span className="font-medium text-accent">O FUTURO JÁ ESTÁ</span><br />
                 <span className="font-bold">NO PRESENTE</span>
               </h1>
@@ -445,11 +1421,24 @@ function App() {
                 </a>
               </motion.div>
             </motion.div>
-          </div>
+          </motion.div>
         </section>
 
+        {/* ── MARQUEE ────────────────────────────────────────────────────────── */}
+        <MarqueeStrip />
+
+        {/* ── CASA INTELIGENTE ───────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <CasaInteligente />
+        </motion.div>
+
         {/* ── BENEFITS ───────────────────────────────────────────────────────── */}
-        <section className="py-20 px-[4vw] relative z-20 text-center">
+        <section className="py-12 md:py-20 px-[4vw] relative z-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -457,11 +1446,11 @@ function App() {
             transition={{ duration: 0.7 }}
             className="mb-12"
           >
-            <h2 className="text-4xl font-bold mb-2">O Poder da Casa Conectada</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">O Poder da Casa Conectada</h2>
             <p className="text-accent tracking-wider">Por que investir em automação residencial?</p>
           </motion.div>
 
-          <div ref={benefitsRef} className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div ref={benefitsRef} className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8 max-w-7xl mx-auto">
             {benefitsData.map((data, i) => (
               <motion.div
                 key={data.id}
@@ -483,8 +1472,8 @@ function App() {
         </section>
 
         {/* ── STATS ──────────────────────────────────────────────────────────── */}
-        <section className="py-16 px-[4vw] relative z-20">
-          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+        <section className="py-10 md:py-16 px-[4vw] relative z-20">
+          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {statsData.map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -504,20 +1493,20 @@ function App() {
         </section>
 
         {/* ── DEPOIMENTOS ─────────────────────────────────────────────────── */}
-        <section className="py-20 px-[4vw] relative z-20">
+        <section className="py-12 md:py-20 px-[4vw] relative z-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="text-center mb-12"
+            className="text-center mb-10 md:mb-12"
           >
             <span className="feature-tag">Depoimentos</span>
-            <h2 className="text-4xl font-bold mt-4 mb-2">O Que Nossos Clientes Dizem</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-2">O Que Nossos Clientes Dizem</h2>
             <p className="text-text-secondary">Experiências reais de quem confia na Maxiimus Tech</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8 max-w-7xl mx-auto">
             {testimonialsData.map((t, i) => (
               <motion.div
                 key={t.name}
@@ -525,7 +1514,7 @@ function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.15 }}
-                className="relative p-8 rounded-[2rem] border border-white/5 bg-white/[0.02] backdrop-blur-sm hover:border-accent/20 hover:bg-accent/[0.03] transition-all duration-500"
+                className="relative p-5 md:p-8 rounded-[2rem] border border-white/5 bg-white/[0.02] backdrop-blur-sm hover:border-accent/20 hover:bg-accent/[0.03] transition-all duration-500"
               >
                 <svg className="w-10 h-10 text-accent/20 mb-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
@@ -546,14 +1535,14 @@ function App() {
         </section>
 
         {/* ── FEATURE ROWS ───────────────────────────────────────────────────── */}
-        <section id="solucoes" className="space-y-32 py-20 px-[4vw] max-w-7xl mx-auto relative z-20">
+        <section id="solucoes" className="space-y-16 md:space-y-32 py-12 md:py-20 px-[4vw] max-w-7xl mx-auto relative z-20">
           <FeatureRow
             tag="PROTEÇÃO"
             title="Segurança e Controle de Acesso"
             desc="O futuro da proteção domiciliar chegou. Nossas fechaduras biométricas inteligentes e câmeras com IA não apenas registram, mas compreendem quem está na sua porta."
             list={["Fechaduras com leitor facial", "Visão noturna avançada", "Notificações instantâneas"]}
             visual={
-              <div className="relative w-[280px] aspect-[3/4] flex items-center justify-center overflow-hidden rounded-2xl">
+              <div className="relative w-full max-w-[280px] aspect-[3/4] flex items-center justify-center overflow-hidden rounded-2xl">
                 <img src="/assets/fechadura.png" loading="lazy" className="w-full drop-shadow-[0_0_20px_rgba(94,234,212,0.3)]" alt="Fechadura inteligente" />
               </div>
             }
@@ -563,7 +1552,7 @@ function App() {
             title="Áudio Imersivo de Alta Fidelidade"
             desc="Preencha sua casa com som de cinema incrível. Com nossos sistemas de som integrados e invisíveis, sua trilha sonora perfeita segue você pelos cômodos."
             list={["Sincronização perfeita", "Acústica ajustada por ambiente", "Controle por voz simples"]}
-            visual={<img src="/assets/receiver.png" loading="lazy" className="w-[350px] drop-shadow-[0_0_15px_rgba(94,234,212,0.2)]" alt="Receiver de áudio" />}
+            visual={<img src="/assets/receiver.png" loading="lazy" className="w-full max-w-[350px] drop-shadow-[0_0_15px_rgba(94,234,212,0.2)]" alt="Receiver de áudio" />}
             reverse
           />
           <FeatureRow
@@ -571,30 +1560,30 @@ function App() {
             title="Sistema de Iluminação com Dimmer"
             desc="A luz certa transforma qualquer espaço. Com o sistema Dimmer, você tem controle total da intensidade e temperatura, criando o clima perfeito para cada momento."
             list={["Controle preciso de intensidade (0-100%)", "Transições suaves e automáticas", "Otimização do consumo de energia"]}
-            visual={<img src="/assets/iluminação diimer.gif" loading="lazy" className="rounded-3xl w-[350px] h-auto" alt="Iluminação dimerizável" />}
+            visual={<img src="/assets/iluminação diimer.gif" loading="lazy" className="rounded-3xl w-full max-w-[350px] h-auto" alt="Iluminação dimerizável" />}
           />
           <FeatureRow
             tag="CONFORTO"
             title="Climatização Inteligente"
             desc="Encontre sempre a temperatura perfeita. Nossos termostatos inteligentes aprendem sua rotina, condicionando o ambiente antes mesmo de você chegar em casa."
             list={["Controle seccional por cômodo", "Integração com cortinas para otimização térmica", "Monitoramento da qualidade do ar"]}
-            visual={<img src="/assets/ar-condicionado.gif" loading="lazy" className="rounded-3xl w-[350px] h-auto" alt="Ar-condicionado inteligente" />}
+            visual={<img src="/assets/ar-condicionado.gif" loading="lazy" className="rounded-3xl w-full max-w-[350px] h-auto" alt="Ar-condicionado inteligente" />}
             reverse
           />
         </section>
 
         {/* ── SOBRE NÓS ──────────────────────────────────────────────────────── */}
-        <section id="sobre-nos" className="py-24 px-[4vw] relative z-20">
+        <section id="sobre-nos" className="py-14 md:py-24 px-[4vw] relative z-20">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16"
+            className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-16"
           >
             <div className="flex-1 space-y-6">
               <span className="feature-tag">Sobre Nós</span>
-              <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
                 Tecnologia Criada Para O <span className="text-accent">Seu Dia a Dia</span>
               </h2>
               <p className="text-text-secondary text-lg leading-relaxed">
@@ -653,11 +1642,11 @@ function App() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="glass-panel max-w-4xl mx-auto p-12 rounded-[2rem] text-center border border-white/10 relative overflow-hidden"
+            className="glass-panel max-w-4xl mx-auto p-6 md:p-12 rounded-[2rem] text-center border border-white/10 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent pointer-events-none" />
             <div className="relative z-10">
-              <h2 className="text-3xl font-bold mb-4">Pronto para modernizar seu lar?</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">Pronto para modernizar seu lar?</h2>
               <p className="text-text-secondary mb-8">Fale diretamente com nossos especialistas e agende um projeto de automação para a sua residência.</p>
               <motion.a
                 href={`https://wa.me/${WHATSAPP_NUMBER}`}
@@ -676,8 +1665,8 @@ function App() {
       </main>
 
       {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-      <footer className="py-20 px-[4vw] border-t border-accent/10 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-7xl mx-auto">
+      <footer className="py-12 md:py-20 px-[4vw] border-t border-accent/10 relative z-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 max-w-7xl mx-auto">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <img src="/assets/logo.png" className="w-8 h-8" alt="Logo" />
@@ -729,7 +1718,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="mt-20 pt-8 border-t border-accent/10 text-center text-xs text-text-secondary">
+        <div className="mt-10 md:mt-20 pt-8 border-t border-accent/10 text-center text-xs text-text-secondary">
           &copy; 2026 Maxiimus Tecnologia Residencial. Todos os direitos reservados.
         </div>
       </footer>
